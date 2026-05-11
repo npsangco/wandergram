@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'main.dart';
 import 'newsfeed.dart';
 import 'post.dart';
 import 'login.dart';
@@ -16,12 +17,54 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final nameController = TextEditingController();
-  final travelHistoryController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-
   File? _pickedProfileImage;
   bool _isUploading = false;
+
+  Future<void> _pickAndUploadProfilePicture(String uid) async {
+    final pickedImage =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _pickedProfileImage = File(pickedImage.path);
+      });
+
+      try {
+        setState(() => _isUploading = true);
+
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference storageRef = FirebaseStorage.instance.ref().child("profile_pictures").child("$fileName.jpg");
+        await storageRef.putFile(_pickedProfileImage!);
+        String downloadUrl = await storageRef.getDownloadURL();
+        await FirebaseFirestore.instance
+            .collection("tbl_users")
+            .doc(uid)
+            .update({'profile_picture': downloadUrl});
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile picture updated!")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("$e")),
+        );
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
+      }
+    }
+  }
+  Widget _statColumn(String count, String label) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 20, color: kDeepNavy),
+        ),
+        Text(label,
+            style: const TextStyle(color: Colors.grey, fontSize: 13)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,181 +73,197 @@ class _ProfilePageState extends State<ProfilePage> {
     final String postUserId = user?.displayName ?? user?.email ?? "";
 
     return Scaffold(
-      backgroundColor: Colors.white,
-
-      // ── AppBar ─────────────────────────────────────────────────────────────
+      backgroundColor: kSkyCream,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: kForestShadow,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection("tbl_users")
-              .doc(uid)
-              .snapshots(),
-          builder: (context, snapshot) {
-            final userdata =
-                snapshot.data?.data() as Map<String, dynamic>? ?? {};
-            return Text(
-              userdata['name'] ?? user?.displayName ?? "Profile",
-              style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20),
-            );
-          },
+        title: const Text(
+          "My Profile",
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.red),
+            icon: const Icon(Icons.logout, color: kCoralPink),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false);
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
             },
           ),
         ],
       ),
 
-      // ── Body ───────────────────────────────────────────────────────────────
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection("tbl_users")
             .doc(uid)
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text("Error loading profile"));
-          }
           if (!snapshot.hasData) {
-            return const SizedBox();
+            return const Center(
+                child: CircularProgressIndicator(color: kMountainBlue));
           }
 
           final userdata = snapshot.data!.data() as Map<String, dynamic>? ?? {};
           final String profilePicUrl = userdata['profile_picture'] ?? "";
           final List travelHistory = List.from(userdata['travel_history'] ?? []);
+          final String userName  = user?.displayName ?? "";
+          final String userEmail = user?.email ?? "";
 
           return Column(
             children: [
-              // ── Profile top section ────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Column(
-                  children: [
-                    Row(
+              Container(
+                color: Colors.white,
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("tbl_posts")
+                      .where('user_id', isEqualTo: postUserId)
+                      .snapshots(),
+                  builder: (context, postSnap) {
+
+                    final int postCount =
+                        postSnap.data?.docs.length ?? 0;
+                    int totalLikes = 0;
+                    if (postSnap.hasData) {
+                      for (var doc in postSnap.data!.docs) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        totalLikes += (data['likes_count'] as int? ?? 0);
+                      }
+                    }
+
+                    return Column(
                       children: [
-                        GestureDetector(
-                          onTap: () => (context, uid),
-                          child: Stack(
-                            children: [
-                              CircleAvatar(
-                                radius: 46,
-                                backgroundColor: Colors.teal[100],
-                                backgroundImage: _pickedProfileImage != null
-                                    ? FileImage(_pickedProfileImage!) as ImageProvider
-                                    : (profilePicUrl.isNotEmpty
+
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: () =>
+                                  _pickAndUploadProfilePicture(uid),
+                              child: Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 46,
+                                    backgroundColor: kRiverCyan,
+                                    backgroundImage:
+                                    _pickedProfileImage != null
+                                        ? FileImage(_pickedProfileImage!)
+                                    as ImageProvider
+                                        : (profilePicUrl.isNotEmpty
                                         ? NetworkImage(profilePicUrl)
                                         : null),
-                                child: (_pickedProfileImage == null && profilePicUrl.isEmpty)
-                                    ? Icon(Icons.person, size: 46, color: Colors.teal[700])
-                                    : null,
-                              ),
-                              Positioned(
-                                bottom: 2,
-                                right: 2,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.teal[700],
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2),
+                                    child: (_pickedProfileImage == null &&
+                                        profilePicUrl.isEmpty)
+                                        ? const Icon(Icons.person,
+                                        size: 46, color: kForestShadow)
+                                        : null,
                                   ),
-                                  child: const Icon(Icons.edit, color: Colors.white, size: 14),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 24),
-                        Expanded(
-                          child: StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection("tbl_posts")
-                                .where('user_id', isEqualTo: postUserId)
-                                .snapshots(),
-                            builder: (context, postSnap) {
-                              final postCount = postSnap.data?.docs.length ?? 0;
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _statColumn(postCount.toString(), "Posts"),
+                                  Positioned(
+                                    bottom: 2,
+                                    right: 2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: kSunsetOrange,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: Colors.white, width: 2),
+                                      ),
+                                      child: _isUploading
+                                          ? const SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2),
+                                      )
+                                          : const Icon(Icons.edit,
+                                          color: Colors.white, size: 14),
+                                    ),
+                                  ),
                                 ],
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    userName,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: kDeepNavy,
+                                    ),
+                                  ),
+                                  Text(
+                                    userEmail,
+                                    style: const TextStyle(
+                                        color: Colors.grey, fontSize: 13),
+                                  ),
+
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.start,
+                                    children: [
+                                      _statColumn(
+                                          postCount.toString(), "Posts"),
+                                      const SizedBox(width: 30),
+                                      _statColumn(
+                                          totalLikes.toString(), "Likes"),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userdata['name'] ?? "",
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            user?.email ?? "",
-                            style: const TextStyle(color: Colors.grey, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+                    );
+                  },
                 ),
               ),
 
-              // ── Travel history ──────────────────────────────────────────
               if (travelHistory.isNotEmpty)
-                SizedBox(
+                Container(
+                  color: Colors.white,
                   height: 90,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 8),
                     itemCount: travelHistory.length,
                     itemBuilder: (context, index) {
-                      final trip = travelHistory[index].toString();
+                      final String trip =
+                      travelHistory[index].toString();
                       return Padding(
                         padding: const EdgeInsets.only(right: 12),
                         child: Column(
                           children: [
-                            Container(
-                              width: 58,
-                              height: 58,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [Colors.teal.shade400, Colors.teal.shade700],
-                                ),
-                              ),
-                              child: const Icon(Icons.flight_takeoff, color: Colors.white, size: 26),
+                            CircleAvatar(
+                              radius: 26,
+                              backgroundColor: kAdventurePurple,
+                              child: const Icon(Icons.flag,
+                                  color: Colors.white, size: 22),
                             ),
                             const SizedBox(height: 4),
-                            SizedBox(
-                              width: 64,
-                              child: Text(
-                                trip,
-                                style: const TextStyle(fontSize: 11),
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                              ),
+                            Text(
+                              trip.length > 8
+                                  ? '${trip.substring(0, 8)}..'
+                                  : trip,
+                              style: const TextStyle(
+                                  fontSize: 11, color: kDeepNavy),
                             ),
                           ],
                         ),
@@ -213,9 +272,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
 
-              const Divider(height: 1),
+              const Divider(height: 1, color: Colors.grey),
 
-              // ── Posts grid ──────────────────────────────────────────────
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -223,77 +281,151 @@ class _ProfilePageState extends State<ProfilePage> {
                       .where('user_id', isEqualTo: postUserId)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return const Center(child: Text("Error loading posts"));
-                    }
                     if (!snapshot.hasData) {
                       return const SizedBox();
                     }
 
-                    final posts = List<QueryDocumentSnapshot>.from(snapshot.data!.docs);
+                    var posts = snapshot.data!.docs;
 
                     if (posts.isEmpty) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.photo_camera_outlined, size: 64, color: Colors.grey[400]),
+                            Icon(Icons.photo_camera_outlined,
+                                size: 64, color: Colors.grey[400]),
                             const SizedBox(height: 12),
                             const Text(
-                              "No Posts Yet",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                              "No Posts",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                  color: kDeepNavy),
                             ),
                             const SizedBox(height: 6),
                             const Text(
                               "Share your first travel photo!",
-                              style: TextStyle(color: Colors.grey, fontSize: 14),
+                              style: TextStyle(
+                                  color: Colors.grey, fontSize: 14),
                             ),
                           ],
                         ),
                       );
                     }
 
-                    posts.sort((a, b) {
-                      final dataA = a.data() as Map<String, dynamic>;
-                      final dataB = b.data() as Map<String, dynamic>;
-                      final tA = dataA['timestamp'] as Timestamp?;
-                      final tB = dataB['timestamp'] as Timestamp?;
-                      if (tA == null) return 1;
-                      if (tB == null) return -1;
-                      return tB.compareTo(tA);
-                    });
-
-                    return GridView.builder(
-                      padding: const EdgeInsets.all(2),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 2,
-                        mainAxisSpacing: 2,
-                      ),
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(12),
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
-                        final data = posts[index].data() as Map<String, dynamic>;
-                        final String imageUrl = data['image_url'] ?? '';
-                        final String content = data['content'] ?? '';
+                        var perpost = posts[index];
 
-                        return GestureDetector(
-                          onTap: () => _showPostDetail(context, data),
-                          child: imageUrl.isNotEmpty
-                              ? Image.network(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, progress) {
-                                    if (progress == null) return child;
-                                    return Container(
-                                      color: Colors.grey[100],
-                                      child: const Center(
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2)),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) => _noImageTile(content),
+                        final String content = perpost['content'] ?? "";
+                        final String imageUrl = perpost['image_url'] ?? "";
+                        final timestamp = perpost['timestamp'];
+                        final int likesCount = perpost['likes_count'] ?? 0;
+                        final int commentsCount = perpost['comments_count'] ?? 0;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 5,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+
+                              Text(
+                                timestamp != null
+                                    ? timestamp.toDate().toString().substring(0, 16)
+                                    : "Posting...",
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.grey),
+                              ),
+
+                              const SizedBox(height: 8),
+
+                              if (content.isNotEmpty)
+                                Text(
+                                  content,
+                                  style: const TextStyle(
+                                      fontSize: 15, color: kDeepNavy),
+                                ),
+
+                              if (imageUrl.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      imageUrl,
+                                      height: 180,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, progress) {
+                                        if (progress == null) return child;
+                                        return Container(
+                                          height: 180,
+                                          color: Colors.grey[100],
+                                          child: const Center(
+                                            child: CircularProgressIndicator(
+                                                color: kMountainBlue),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (_, __, ___) =>
+                                          Container(
+                                            height: 80,
+                                            color: kSkyCream,
+                                            child: const Center(
+                                              child: Icon(
+                                                  Icons.broken_image_outlined,
+                                                  color: Colors.grey),
+                                            ),
+                                          ),
+                                    ),
+                                  ),
                                 )
-                              : _noImageTile(content),
+                              else if (content.isEmpty)
+                                Container(
+                                  height: 80,
+                                  color: kSkyCream,
+                                  child: const Center(
+                                    child: Text("No content",
+                                        style:
+                                        TextStyle(color: Colors.grey)),
+                                  ),
+                                ),
+
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  const Icon(Icons.thumb_up_alt_outlined,
+                                      color: kSunsetOrange, size: 18),
+                                  const SizedBox(width: 4),
+                                  Text('$likesCount',
+                                      style: const TextStyle(
+                                          color: Colors.grey)),
+                                  const SizedBox(width: 16),
+                                  const Icon(Icons.comment_outlined,
+                                      color: kCoralPink, size: 18),
+                                  const SizedBox(width: 4),
+                                  Text('$commentsCount',
+                                      style: const TextStyle(
+                                          color: Colors.grey)),
+                                ],
+                              ),
+                            ],
+                          ),
                         );
                       },
                     );
@@ -305,94 +437,34 @@ class _ProfilePageState extends State<ProfilePage> {
         },
       ),
 
-      // ── Bottom Navigation Bar ──────────────────────────────────────────────
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
-        selectedItemColor: Colors.teal[700],
+        selectedItemColor: kSunsetOrange,
         unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
+        backgroundColor: kForestShadow,
         elevation: 10,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushAndRemoveUntil(
-                context, MaterialPageRoute(builder: (_) => const NewsfeedPage()), (route) => false);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NewsfeedPage()),
+            );
           } else if (index == 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const PostPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PostPage()),
+            );
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Newsfeed"),
-          BottomNavigationBarItem(icon: Icon(Icons.add_circle_rounded, size: 35), label: "Post"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: "Profile"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded), label: "Newsfeed"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.add_circle_rounded), label: "Post"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded), label: "Profile"),
         ],
-      ),
-    );
-  }
-
-  Widget _noImageTile(String content) {
-    return Container(
-      color: Colors.teal[50],
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Text(
-            content,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: Colors.teal[700]),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _statColumn(String count, String label) {
-    return Column(
-      children: [
-        Text(count, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-      ],
-    );
-  }
-
-  void _showPostDetail(BuildContext context, Map<String, dynamic> data) {
-    final String imageUrl = data['image_url'] ?? '';
-    final String content = data['content'] ?? '';
-    final int likesCount = data['likes_count'] ?? 0;
-    final int commentsCount = data['comments_count'] ?? 0;
-
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (imageUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(imageUrl, height: 200, width: double.infinity, fit: BoxFit.cover),
-              ),
-            if (imageUrl.isNotEmpty) const SizedBox(height: 12),
-            Text(content, style: const TextStyle(fontSize: 15)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.thumb_up_alt_outlined, size: 18, color: Colors.teal),
-                const SizedBox(width: 4),
-                Text('$likesCount', style: const TextStyle(color: Colors.grey)),
-                const SizedBox(width: 16),
-                const Icon(Icons.comment_outlined, size: 18, color: Colors.teal),
-                const SizedBox(width: 4),
-                Text('$commentsCount', style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
       ),
     );
   }

@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'main.dart';
 import 'newsfeed.dart';
+import 'profile.dart';
 
 class PostPage extends StatefulWidget {
   const PostPage({super.key});
@@ -20,34 +22,21 @@ class _PostPageState extends State<PostPage> {
   File? selectedImage;
   bool _isUploading = false;
 
-  // ── Pick image from gallery (PDF Step 4 method) ───────────────────────────
-  Future<void> _pickImage() async {
-    final pickedImage =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      setState(() {
-        selectedImage = File(pickedImage.path);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: kSkyCream,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: kForestShadow,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           "Create Post",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -73,119 +62,98 @@ class _PostPageState extends State<PostPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── User header ──────────────────────────────────
                           Row(
                             children: [
                               const CircleAvatar(
                                 radius: 22,
-                                backgroundColor: Colors.grey,
-                                child: Icon(Icons.person,
-                                    color: Colors.white),
+                                backgroundColor: kRiverCyan,
+                                child: Icon(Icons.person, color: kForestShadow),
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                FirebaseAuth.instance.currentUser
-                                    ?.displayName ??
-                                    "User",
+                                FirebaseAuth.instance.currentUser?.displayName ?? "User",
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
+                                  color: kDeepNavy,
                                 ),
                               ),
                             ],
                           ),
-
                           const SizedBox(height: 16),
-
-                          // ── Content field ────────────────────────────────
                           TextFormField(
                             controller: contentController,
                             maxLines: null,
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 16, color: kDeepNavy),
                             validator: (value) =>
-                            (value == null || value.isEmpty)
-                                ? "Required"
-                                : null,
+                            (value == null || value.isEmpty) ? "Required" : null,
                             decoration: const InputDecoration(
-                              hintText: "What's on your mind?",
+                              hintText: "Share your travel experience!",
                               border: InputBorder.none,
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
-                          // ── Photo / Video picker row (sangco_3rdact Row style) ─
                           Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceAround,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              // Photo button
                               InkWell(
-                                onTap: _pickImage,
-                                borderRadius: BorderRadius.circular(8),
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.photo,
-                                          color: Colors.green),
-                                      SizedBox(width: 5),
-                                      Text("Photo"),
-                                    ],
-                                  ),
+                                onTap: () async {
+                                  final pickedImage = await ImagePicker()
+                                      .pickImage(source: ImageSource.gallery);
+                                  if (pickedImage != null) {
+                                    setState(() {
+                                      selectedImage = File(pickedImage.path);
+                                    });
+                                  }
+                                },
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.photo, color: kSunsetOrange),
+                                    SizedBox(width: 5),
+                                    Text("Photo", style: TextStyle(color: kDeepNavy)),
+                                  ],
                                 ),
                               ),
-                              // Video (placeholder, no action)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.videocam,
-                                        color: Colors.red),
-                                    SizedBox(width: 5),
-                                    Text("Video"),
-                                  ],
+                              const Row(
+                                children: [
+                                  Icon(Icons.videocam, color: kCoralPink),
+                                  SizedBox(width: 5),
+                                  Text("Video", style: TextStyle(color: kDeepNavy)),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          selectedImage == null
+                              ? const SizedBox()
+                              : Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.file(
+                                  selectedImage!,
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 6,
+                                right: 6,
+                                child: GestureDetector(
+                                  onTap: () => setState(() => selectedImage = null),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-
-                          const SizedBox(height: 20),
-
-                          // ── Image preview ────────────────────────────────
-                          if (selectedImage != null)
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Image.file(
-                                    selectedImage!,
-                                    height: 200,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                // Remove image button
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: GestureDetector(
-                                    onTap: () => setState(
-                                            () => selectedImage = null),
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.black54,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(Icons.close,
-                                          color: Colors.white, size: 20),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                         ],
                       ),
                     ),
@@ -194,8 +162,6 @@ class _PostPageState extends State<PostPage> {
               ],
             ),
           ),
-
-          // ── Post button (PDF Step 4 upload method) ────────────────────────
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,
@@ -204,7 +170,8 @@ class _PostPageState extends State<PostPage> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal[700],
+                  backgroundColor: kMountainBlue,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -217,66 +184,47 @@ class _PostPageState extends State<PostPage> {
                   setState(() => _isUploading = true);
 
                   try {
-                    final content = contentController.text;
+                    var content = contentController.text;
                     String? uploadedImageUrl;
 
-                    // ── Upload image to Firebase Storage ──────────
                     if (selectedImage != null) {
-                      String fileName = DateTime.now()
-                          .millisecondsSinceEpoch
-                          .toString();
-                      Reference storageRef = FirebaseStorage
-                          .instance
+                      String fileName =
+                      DateTime.now().millisecondsSinceEpoch.toString();
+                      Reference storageRef = FirebaseStorage.instance
                           .ref()
                           .child("post_images")
                           .child("$fileName.jpg");
                       await storageRef.putFile(selectedImage!);
-                      uploadedImageUrl =
-                      await storageRef.getDownloadURL();
+                      uploadedImageUrl = await storageRef.getDownloadURL();
                     }
-
-                    final user =
-                        FirebaseAuth.instance.currentUser;
-
-                    // ── Save to tbl_posts with schema field names ─
-                    final postRef = FirebaseFirestore.instance
+                    final user = FirebaseAuth.instance.currentUser;
+                    await FirebaseFirestore.instance
                         .collection("tbl_posts")
-                        .doc();
-
-                    await postRef.set({
-                      'post_id': postRef.id,
-                      'user_id': user?.displayName ??
-                          user?.email ??
-                          "",
+                        .add({
+                      'post_id': '',
+                      'user_id': user?.uid ?? "",
+                      'user_name': user?.displayName ?? "User",
                       'content': content,
                       'image_url': uploadedImageUrl ?? '',
-                      'timestamp': Timestamp.now(),
+                      'timestamp': FieldValue.serverTimestamp(),
                       'likes_count': 0,
                       'comments_count': 0,
                     });
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Post submitted!')),
-                      );
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const NewsfeedPage()),
-                            (route) => false,
-                      );
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Post submitted!")),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NewsfeedPage(),
+                      ),
+                    );
                   } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("$e")),
-                      );
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("$e")),
+                    );
                   } finally {
-                    if (mounted) {
-                      setState(() => _isUploading = false);
-                    }
+                    if (mounted) setState(() => _isUploading = false);
                   }
                 },
                 child: _isUploading
@@ -288,15 +236,37 @@ class _PostPageState extends State<PostPage> {
                 )
                     : const Text(
                   "Post",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
           ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1,
+        selectedItemColor: kSunsetOrange,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: kForestShadow,
+        elevation: 10,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NewsfeedPage()),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Newsfeed"),
+          BottomNavigationBarItem(icon: Icon(Icons.add_circle_rounded), label: "Post"),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: "Profile"),
         ],
       ),
     );

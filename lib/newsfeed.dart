@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'main.dart';
 import 'post.dart';
 import 'profile.dart';
 import 'login.dart';
@@ -11,46 +12,130 @@ class NewsfeedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kSkyCream,
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(color: kForestShadow),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: kRiverCyan,
+                    child: Icon(Icons.person, color: kForestShadow, size: 32),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    FirebaseAuth.instance.currentUser?.displayName ?? "",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    FirebaseAuth.instance.currentUser?.email ?? "",
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home, color: kMountainBlue),
+              title: const Text("Home", style: TextStyle(color: kDeepNavy)),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.person, color: kMountainBlue),
+              title: const Text("Profile", style: TextStyle(color: kDeepNavy)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: kCoralPink),
+              title: const Text("Logout", style: TextStyle(color: kCoralPink)),
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: kForestShadow,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
-          "Wander",
+          "Wandergram",
           style: TextStyle(
-              color: Colors.black, fontWeight: FontWeight.w600),
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.red),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                        (route) => false);
-              }
-            },
-          ),
-        ],
       ),
-
-      backgroundColor: Colors.grey[200],
-
-      // ── Body ───────────────────────────────────────────────────────────────
       body: Column(
         children: [
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: kRiverCyan,
+                  child: Icon(Icons.person, color: kForestShadow),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PostPage()),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                      alignment: Alignment.centerLeft,
+                      side: BorderSide(color: Colors.grey.shade400),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      backgroundColor: Colors.white,
+                    ),
+                    child: const Text(
+                      "What's on your mind?",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
+            child: StreamBuilder(
               stream: FirebaseFirestore.instance
                   .collection("tbl_posts")
                   .orderBy("timestamp", descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(color: kMountainBlue));
                 }
 
                 var posts = snapshot.data!.docs;
@@ -63,13 +148,10 @@ class NewsfeedPage extends StatelessWidget {
                     ),
                   );
                 }
-
                 return ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 12),
                   itemCount: posts.length,
                   itemBuilder: (context, index) {
-                    final perpost =
-                    posts[index].data() as Map<String, dynamic>;
+                    var perpost = posts[index];
 
                     final String userId = perpost['user_id'] ?? "";
                     final String content = perpost['content'] ?? "";
@@ -77,8 +159,8 @@ class NewsfeedPage extends StatelessWidget {
                     final timestamp = perpost['timestamp'];
 
                     return Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                      margin: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
@@ -93,115 +175,88 @@ class NewsfeedPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Post header ──────────────────────────────────
-                          Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              children: [
-                                const CircleAvatar(
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person,
-                                      color: Colors.white),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        userId,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
+                          Row(
+                            children: [
+                              const CircleAvatar(
+                                backgroundColor: kRiverCyan,
+                                child: Icon(Icons.person, color: kForestShadow),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      userId,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: kDeepNavy,
                                       ),
-                                      Text(
-                                        timestamp != null
-                                            ? timestamp
-                                            .toDate()
-                                            .toString()
-                                            .substring(0, 16)
-                                            : "",
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    Text(
+                                      timestamp != null
+                                          ? timestamp.toDate().toString().substring(0, 16)
+                                          : "Posting...",
+                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-
-                          // ── Post content text ────────────────────────────
+                          const SizedBox(height: 15),
                           if (content.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14),
-                              child: Text(content,
-                                  style: const TextStyle(fontSize: 16)),
-                            ),
-
-                          // ── Post image (PDF Step 4 image display) ────────
+                            Text(content, style: const TextStyle(fontSize: 16, color: kDeepNavy)),
                           if (imageUrl.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(15),
-                                  bottomRight: Radius.circular(15),
-                                ),
+                                borderRadius: BorderRadius.circular(15),
                                 child: Image.network(
                                   imageUrl,
+                                  height: 220,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, progress) {
+                                  loadingBuilder: (context, child, progress) {
                                     if (progress == null) return child;
                                     return Container(
-                                      height: 200,
+                                      height: 220,
                                       color: Colors.grey[100],
                                       child: const Center(
-                                          child:
-                                          CircularProgressIndicator()),
+                                        child: CircularProgressIndicator(color: kMountainBlue),
+                                      ),
                                     );
                                   },
-                                  errorBuilder: (_, __, ___) =>
-                                  const SizedBox(),
+                                  errorBuilder: (_, __, ___) => const SizedBox(),
                                 ),
                               ),
                             ),
-
-                          // ── Like / Comment row ───────────────────────────
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
-                            child: Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceAround,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                        Icons.thumb_up_alt_outlined,
-                                        color: Colors.green),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                        '${perpost['likes_count'] ?? 0} Likes'),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.comment_outlined,
-                                        color: Colors.red),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                        '${perpost['comments_count'] ?? 0} Comments'),
-                                  ],
-                                ),
-                              ],
-                            ),
+                          const SizedBox(height: 15),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.thumb_up_alt_outlined, color: kSunsetOrange),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    '${perpost['likes_count'] ?? 0} Likes',
+                                    style: const TextStyle(color: kDeepNavy),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.comment_outlined, color: kCoralPink),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    '${perpost['comments_count'] ?? 0} Comments',
+                                    style: const TextStyle(color: kDeepNavy),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -213,30 +268,30 @@ class NewsfeedPage extends StatelessWidget {
           ),
         ],
       ),
-
-      // ── Bottom Navigation Bar ──────────────────────────────────────────────
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
-        selectedItemColor: Colors.teal[700],
+        selectedItemColor: kSunsetOrange,
         unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
+        backgroundColor: kForestShadow,
         elevation: 10,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 1) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const PostPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PostPage()),
+            );
           } else if (index == 2) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const ProfilePage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
           }
         },
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded), label: "Newsfeed"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_rounded, size: 35), label: "Post"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded), label: "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Newsfeed"),
+          BottomNavigationBarItem(icon: Icon(Icons.add_circle_rounded), label: "Post"),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: "Profile"),
         ],
       ),
     );
