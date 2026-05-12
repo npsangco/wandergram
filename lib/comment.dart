@@ -6,6 +6,7 @@ import 'main.dart';
 class CommentPage extends StatefulWidget {
   final String postId;
   final String postUserId;
+  final String postUserName;
   final String postContent;
   final String postImageUrl;
   final String postTimestamp;
@@ -16,6 +17,7 @@ class CommentPage extends StatefulWidget {
     super.key,
     required this.postId,
     required this.postUserId,
+    required this.postUserName,
     required this.postContent,
     required this.postImageUrl,
     required this.postTimestamp,
@@ -70,7 +72,7 @@ class _CommentPageState extends State<CommentPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(widget.postUserId, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kDeepNavy)),
+                                Text(widget.postUserName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kDeepNavy)),
                                 Text(widget.postTimestamp, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                               ],
                             ),
@@ -177,7 +179,8 @@ class _CommentPageState extends State<CommentPage> {
                           await FirebaseFirestore.instance.collection("tbl_comments").add({
                             'comment_id': commentRef.id,
                             'post_id': widget.postId,
-                            'user_id': user?.displayName ?? user?.email ?? "User",
+                            'user_id': user?.uid ?? "User",
+                            'user_name': user?.displayName ?? user?.email ?? "User",
                             'content': text,
                             'timestamp': FieldValue.serverTimestamp(),
                           });
