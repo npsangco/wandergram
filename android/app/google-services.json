@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "978476159167",
-    "project_id": "travel-sharing-app-42b85",
-    "storage_bucket": "travel-sharing-app-42b85.firebasestorage.app"
+    "project_number": "48438413136",
+    "project_id": "travel-sharing-app-12b05",
+    "storage_bucket": "travel-sharing-app-12b05.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:978476159167:android:1c86548cf1000095ff760a",
-        "android_client_info": {
-          "package_name": "com.example.sangco_firstflutter"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyA1r5kC-hKkyuhvY1gGruB3niIbqA53WF8"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:978476159167:android:8cbb70db7fc88656ff760a",
+        "mobilesdk_app_id": "1:48438413136:android:aed297159ac84b28d3ce55",
         "android_client_info": {
           "package_name": "com.example.travel_sharing_app"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA1r5kC-hKkyuhvY1gGruB3niIbqA53WF8"
+          "current_key": "AIzaSyAtjpKrosAoVhZo1MdTmEnkThoU25No6OA"
         }
       ],
       "services": {

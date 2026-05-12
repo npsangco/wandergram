@@ -47,29 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAUMGfUero73EDuYdUUDpwY24a-Nc936YA',
-    appId: '1:978476159167:web:da1d05d4ff96e9c9ff760a',
-    messagingSenderId: '978476159167',
-    projectId: 'travel-sharing-app-42b85',
-    authDomain: 'travel-sharing-app-42b85.firebaseapp.com',
-    storageBucket: 'travel-sharing-app-42b85.firebasestorage.app',
-    measurementId: 'G-RF08HGFCWH',
+    apiKey: 'AIzaSyCdSi0FrVtyWM4dbYEkAOjeBkLrg90kBd0',
+    appId: '1:48438413136:web:f7bfae1d15b5fbb5d3ce55',
+    messagingSenderId: '48438413136',
+    projectId: 'travel-sharing-app-12b05',
+    authDomain: 'travel-sharing-app-12b05.firebaseapp.com',
+    storageBucket: 'travel-sharing-app-12b05.firebasestorage.app',
+    measurementId: 'G-F68V673W42',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA1r5kC-hKkyuhvY1gGruB3niIbqA53WF8',
-    appId: '1:978476159167:android:8cbb70db7fc88656ff760a',
-    messagingSenderId: '978476159167',
-    projectId: 'travel-sharing-app-42b85',
-    storageBucket: 'travel-sharing-app-42b85.firebasestorage.app',
+    apiKey: 'AIzaSyAtjpKrosAoVhZo1MdTmEnkThoU25No6OA',
+    appId: '1:48438413136:android:aed297159ac84b28d3ce55',
+    messagingSenderId: '48438413136',
+    projectId: 'travel-sharing-app-12b05',
+    storageBucket: 'travel-sharing-app-12b05.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBJtzVhuIywDrBQOafbHQiDCAEMcawjNkk',
-    appId: '1:978476159167:ios:6002c5594514b8efff760a',
-    messagingSenderId: '978476159167',
-    projectId: 'travel-sharing-app-42b85',
-    storageBucket: 'travel-sharing-app-42b85.firebasestorage.app',
+    apiKey: 'AIzaSyCcTgQ5aRJ7onKxJ3brrWYnoCfS1fVXzwY',
+    appId: '1:48438413136:ios:b13fab8ed7fa18edd3ce55',
+    messagingSenderId: '48438413136',
+    projectId: 'travel-sharing-app-12b05',
+    storageBucket: 'travel-sharing-app-12b05.firebasestorage.app',
     iosBundleId: 'com.example.travelSharingApp',
   );
 }
