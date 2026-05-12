@@ -13,7 +13,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final fullnameController = TextEditingController();
-  final emailController    = TextEditingController();
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
@@ -143,21 +143,21 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: ElevatedButton(
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
-                        var nsfullname = fullnameController.text;
-                        var nsemail = emailController.text;
-                        var nspass = passwordController.text;
+                        var fullname = fullnameController.text;
+                        var email = emailController.text;
+                        var pass = passwordController.text;
                         try {
-                          var usercredential = await FirebaseAuth.instance
+                          var userCredential = await FirebaseAuth.instance
                               .createUserWithEmailAndPassword(
-                              email: nsemail, password: nspass);
-                          await usercredential.user!.updateDisplayName(nsfullname);
+                              email: email, password: pass);
+                          await userCredential.user!.updateDisplayName(fullname);
                           await FirebaseFirestore.instance
                               .collection("tbl_users")
-                              .doc(usercredential.user!.uid)
+                              .doc(userCredential.user!.uid)
                               .set({
-                            'user_id'        : usercredential.user!.uid,
-                            'name'           : nsfullname,
-                            'profile_picture': '',
+                            'user_id' : userCredential.user!.uid,
+                            'name' : fullname,
+                            'profile_picture' : '',
                             'travel_history' : [],
                           });
 
