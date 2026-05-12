@@ -30,7 +30,7 @@ class TravelApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wandergram',
-      home: const LoginPage(),
+      home: LoginPage(),
     );
   }
 }

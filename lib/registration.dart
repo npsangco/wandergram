@@ -24,15 +24,14 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kSkyCream,
-
       body: Center(
         child: Container(
-          margin: const EdgeInsets.all(25),
-          padding: const EdgeInsets.all(25),
+          margin: EdgeInsets.all(25),
+          padding: EdgeInsets.all(25),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
                 color: Colors.black12,
                 blurRadius: 8,
@@ -45,16 +44,13 @@ class _RegisterPageState extends State<RegisterPage> {
             child: ListView(
               shrinkWrap: true,
               children: [
-
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 45,
                   backgroundColor: kMountainBlue,
                   child: Icon(Icons.travel_explore, size: 50, color: Colors.white),
                 ),
-
-                const SizedBox(height: 20),
-
-                const Text(
+                SizedBox(height: 20),
+                Text(
                   "Create Account",
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -63,39 +59,33 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: kDeepNavy,
                   ),
                 ),
-
-                const SizedBox(height: 5),
-
-                const Text(
+                SizedBox(height: 5),
+                Text(
                   "Join the travel community!",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey, fontSize: 15),
                 ),
-
-                const SizedBox(height: 30),
-
+                SizedBox(height: 30),
                 TextFormField(
                   controller: fullnameController,
                   validator: (value) =>
                   (value == null || value.isEmpty) ? "Required" : null,
                   decoration: InputDecoration(
                     labelText: "Full Name",
-                    labelStyle: const TextStyle(color: kMountainBlue, fontWeight: FontWeight.bold),
-                    prefixIcon: const Icon(Icons.person, color: kMountainBlue),
+                    labelStyle: TextStyle(color: kMountainBlue, fontWeight: FontWeight.bold),
+                    prefixIcon: Icon(Icons.person, color: kMountainBlue),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kMountainBlue, width: 2),
+                      borderSide: BorderSide(color: kMountainBlue, width: 2),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kSunsetOrange, width: 3),
+                      borderSide: BorderSide(color: kSunsetOrange, width: 3),
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 15),
-
+                SizedBox(height: 15),
                 TextFormField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -103,22 +93,20 @@ class _RegisterPageState extends State<RegisterPage> {
                   (value == null || value.isEmpty) ? "Required" : null,
                   decoration: InputDecoration(
                     labelText: "Email",
-                    labelStyle: const TextStyle(color: kMountainBlue, fontWeight: FontWeight.bold),
-                    prefixIcon: const Icon(Icons.email, color: kMountainBlue),
+                    labelStyle: TextStyle(color: kMountainBlue, fontWeight: FontWeight.bold),
+                    prefixIcon: Icon(Icons.email, color: kMountainBlue),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kMountainBlue, width: 2),
+                      borderSide: BorderSide(color: kMountainBlue, width: 2),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kSunsetOrange, width: 3),
+                      borderSide: BorderSide(color: kSunsetOrange, width: 3),
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 15),
-
+                SizedBox(height: 15),
                 TextFormField(
                   controller: passwordController,
                   obscureText: _obscurePassword,
@@ -126,15 +114,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   (value == null || value.isEmpty) ? "Required" : null,
                   decoration: InputDecoration(
                     labelText: "Password",
-                    labelStyle: const TextStyle(color: kMountainBlue, fontWeight: FontWeight.bold),
-                    prefixIcon: const Icon(Icons.lock, color: kMountainBlue),
+                    labelStyle: TextStyle(color: kMountainBlue, fontWeight: FontWeight.bold),
+                    prefixIcon: Icon(Icons.lock, color: kMountainBlue),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kMountainBlue, width: 2),
+                      borderSide: BorderSide(color: kMountainBlue, width: 2),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: kSunsetOrange, width: 3),
+                      borderSide: BorderSide(color: kSunsetOrange, width: 3),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     suffixIcon: IconButton(
@@ -150,9 +138,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 25),
-
+                SizedBox(height: 25),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -181,13 +167,13 @@ class _RegisterPageState extends State<RegisterPage> {
                           });
 
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Registration successful!")),
+                            SnackBar(content: Text("Registration successful!")),
                           );
 
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const LoginPage(),
+                              builder: (context) => LoginPage(),
                             ),
                           );
                         } on FirebaseAuthException catch (e) {
@@ -200,33 +186,30 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kMountainBlue,
                       foregroundColor: Colors.white,
-                      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     ),
-                    child: const Text("SIGN UP"),
+                    child: Text("SIGN UP"),
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
+                SizedBox(height: 12),
                 OutlinedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: kCoralPink,
-                    side: const BorderSide(color: kCoralPink, width: 2),
-                    padding: const EdgeInsets.all(14),
-                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    side: BorderSide(color: kCoralPink, width: 2),
+                    padding: EdgeInsets.all(14),
+                    textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                   ),
-                  child: const Text("Already have an account? Login"),
+                  child: Text("Already have an account? Login"),
                 ),
-
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
               ],
             ),
           ),

@@ -18,7 +18,7 @@ class NewsfeedPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: kForestShadow,
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           "Wandergram",
           style: TextStyle(
             color: Colors.white,
@@ -29,12 +29,12 @@ class NewsfeedPage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: kCoralPink),
+            icon: Icon(Icons.logout, color: kCoralPink),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
+                MaterialPageRoute(builder: (context) => LoginPage()),
               );
             },
           ),
@@ -44,25 +44,25 @@ class NewsfeedPage extends StatelessWidget {
         children: [
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   backgroundColor: kRiverCyan,
                   child: Icon(Icons.person, color: kForestShadow),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const PostPage()),
+                            builder: (context) => PostPage()),
                       );
                     },
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EdgeInsets.symmetric(
                           horizontal: 15, vertical: 12),
                       alignment: Alignment.centerLeft,
                       side: BorderSide(color: Colors.grey.shade400),
@@ -71,7 +71,7 @@ class NewsfeedPage extends StatelessWidget {
                       ),
                       backgroundColor: Colors.white,
                     ),
-                    child: const Text(
+                    child: Text(
                       "What's on your mind?",
                       style: TextStyle(color: Colors.grey),
                     ),
@@ -83,20 +83,18 @@ class NewsfeedPage extends StatelessWidget {
           Expanded(
             child: StreamBuilder(
               stream: FirebaseFirestore.instance
-                  .collection("tbl_posts")           // tbl_posts — from schema
-                  .orderBy("timestamp", descending: true) // timestamp — schema
+                  .collection("tbl_posts")
+                  .orderBy("timestamp", descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(
+                  return Center(
                     child: CircularProgressIndicator(color: kMountainBlue),
                   );
                 }
-
                 var posts = snapshot.data!.docs;
-
                 if (posts.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -121,7 +119,7 @@ class NewsfeedPage extends StatelessWidget {
                   );
                 }
                 return ListView.builder(
-                  padding: const EdgeInsets.only(top: 8, bottom: 12),
+                  padding: EdgeInsets.only(top: 8, bottom: 12),
                   itemCount: posts.length,
                   itemBuilder: (context, index) {
                     var perpost = posts[index];
@@ -139,12 +137,12 @@ class NewsfeedPage extends StatelessWidget {
                         ? timestamp.toDate().toString().substring(0, 16)
                         : "Posting...";
                     return Container(
-                      margin: const EdgeInsets.only(
+                      margin: EdgeInsets.only(
                           bottom: 10, left: 12, right: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
                             color: Colors.black12,
                             blurRadius: 5,
@@ -156,15 +154,15 @@ class NewsfeedPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+                            padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
                             child: Row(
                               children: [
-                                const CircleAvatar(
+                                CircleAvatar(
                                   backgroundColor: kRiverCyan,
                                   child:
                                   Icon(Icons.person, color: kForestShadow),
                                 ),
-                                const SizedBox(width: 10),
+                                SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -172,7 +170,7 @@ class NewsfeedPage extends StatelessWidget {
                                     children: [
                                       Text(
                                         userName,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,
                                           color: kDeepNavy,
@@ -180,7 +178,7 @@ class NewsfeedPage extends StatelessWidget {
                                       ),
                                       Text(
                                         timestampStr,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 11, color: Colors.grey),
                                       ),
                                     ],
@@ -191,18 +189,18 @@ class NewsfeedPage extends StatelessWidget {
                           ),
                           if (content.isNotEmpty)
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+                              padding: EdgeInsets.fromLTRB(14, 10, 14, 0),
                               child: Text(
                                 content,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 15, color: kDeepNavy),
                               ),
                             ),
                           if (imageUrl.isNotEmpty)
                             Padding(
-                              padding: const EdgeInsets.only(top: 10),
+                              padding: EdgeInsets.only(top: 10),
                               child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
+                                borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(15),
                                   bottomRight: Radius.circular(15),
                                 ),
@@ -217,37 +215,37 @@ class NewsfeedPage extends StatelessWidget {
                                     return Container(
                                       height: 220,
                                       color: Colors.grey[100],
-                                      child: const Center(
+                                      child: Center(
                                         child: CircularProgressIndicator(
                                             color: kMountainBlue),
                                       ),
                                     );
                                   },
                                   errorBuilder: (_, __, ___) =>
-                                  const SizedBox(),
+                                      SizedBox(),
                                 ),
                               ),
                             ),
-                          const Padding(
+                          Padding(
                             padding:
                             EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                             child: Divider(height: 1, color: Color(0xFFEEEEEE)),
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+                            padding: EdgeInsets.fromLTRB(8, 0, 8, 10),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: TextButton.icon(
                                     onPressed: () {
                                     },
-                                    icon: const Icon(
+                                    icon: Icon(
                                         Icons.thumb_up_alt_outlined,
                                         color: kSunsetOrange,
                                         size: 18),
                                     label: Text(
                                       '$likesCount Likes',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: kDeepNavy, fontSize: 13),
                                     ),
                                     style: TextButton.styleFrom(
@@ -282,11 +280,11 @@ class NewsfeedPage extends StatelessWidget {
                                         ),
                                       );
                                     },
-                                    icon: const Icon(Icons.comment_outlined,
+                                    icon: Icon(Icons.comment_outlined,
                                         color: kCoralPink, size: 18),
                                     label: Text(
                                       '$commentsCount Comments',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: kDeepNavy, fontSize: 13),
                                     ),
                                     style: TextButton.styleFrom(
@@ -321,16 +319,16 @@ class NewsfeedPage extends StatelessWidget {
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const PostPage()),
+              MaterialPageRoute(builder: (context) => PostPage()),
             );
           } else if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfilePage()),
+              MaterialPageRoute(builder: (context) => ProfilePage()),
             );
           }
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded), label: "Newsfeed"),
           BottomNavigationBarItem(

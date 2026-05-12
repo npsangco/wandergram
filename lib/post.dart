@@ -29,8 +29,8 @@ class _PostPageState extends State<PostPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kForestShadow,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
           "Create Post",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
@@ -41,13 +41,13 @@ class _PostPageState extends State<PostPage> {
         children: [
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               children: [
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
                         blurRadius: 10,
                         color: Colors.black12,
@@ -56,7 +56,7 @@ class _PostPageState extends State<PostPage> {
                     ],
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: Form(
                       key: formKey,
                       child: Column(
@@ -64,15 +64,15 @@ class _PostPageState extends State<PostPage> {
                         children: [
                           Row(
                             children: [
-                              const CircleAvatar(
+                              CircleAvatar(
                                 radius: 22,
                                 backgroundColor: kRiverCyan,
                                 child: Icon(Icons.person, color: kForestShadow),
                               ),
-                              const SizedBox(width: 10),
+                              SizedBox(width: 10),
                               Text(
                                 FirebaseAuth.instance.currentUser?.displayName ?? "User",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                   color: kDeepNavy,
@@ -80,19 +80,19 @@ class _PostPageState extends State<PostPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           TextFormField(
                             controller: contentController,
                             maxLines: null,
-                            style: const TextStyle(fontSize: 16, color: kDeepNavy),
+                            style: TextStyle(fontSize: 16, color: kDeepNavy),
                             validator: (value) =>
                             (value == null || value.isEmpty) ? "Required" : null,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: "Share your travel experience!",
                               border: InputBorder.none,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
@@ -106,7 +106,7 @@ class _PostPageState extends State<PostPage> {
                                     });
                                   }
                                 },
-                                child: const Row(
+                                child: Row(
                                   children: [
                                     Icon(Icons.photo, color: kSunsetOrange),
                                     SizedBox(width: 5),
@@ -114,7 +114,7 @@ class _PostPageState extends State<PostPage> {
                                   ],
                                 ),
                               ),
-                              const Row(
+                              Row(
                                 children: [
                                   Icon(Icons.videocam, color: kCoralPink),
                                   SizedBox(width: 5),
@@ -123,9 +123,9 @@ class _PostPageState extends State<PostPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: 20),
                           selectedImage == null
-                              ? const SizedBox()
+                              ? SizedBox()
                               : Stack(
                             children: [
                               ClipRRect(
@@ -143,12 +143,12 @@ class _PostPageState extends State<PostPage> {
                                 child: GestureDetector(
                                   onTap: () => setState(() => selectedImage = null),
                                   child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
                                       color: Colors.black54,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                    child: Icon(Icons.close, color: Colors.white, size: 18),
                                   ),
                                 ),
                               ),
@@ -163,7 +163,7 @@ class _PostPageState extends State<PostPage> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             color: Colors.white,
             child: SizedBox(
               width: double.infinity,
@@ -211,12 +211,12 @@ class _PostPageState extends State<PostPage> {
                       'comments_count': 0,
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Post submitted!")),
+                      SnackBar(content: Text("Post submitted!")),
                     );
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const NewsfeedPage(),
+                        builder: (context) => NewsfeedPage(),
                       ),
                     );
                   } catch (e) {
@@ -228,13 +228,13 @@ class _PostPageState extends State<PostPage> {
                   }
                 },
                 child: _isUploading
-                    ? const SizedBox(
+                    ? SizedBox(
                   height: 22,
                   width: 22,
                   child: CircularProgressIndicator(
                       color: Colors.white, strokeWidth: 2),
                 )
-                    : const Text(
+                    : Text(
                   "Post",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
@@ -254,16 +254,16 @@ class _PostPageState extends State<PostPage> {
           if (index == 0) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const NewsfeedPage()),
+              MaterialPageRoute(builder: (context) => NewsfeedPage()),
             );
           } else if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfilePage()),
+              MaterialPageRoute(builder: (context) => ProfilePage()),
             );
           }
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: "Newsfeed"),
           BottomNavigationBarItem(icon: Icon(Icons.add_circle_rounded), label: "Post"),
           BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: "Profile"),

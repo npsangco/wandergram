@@ -78,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: kForestShadow,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           "My Profile",
           style: TextStyle(
               color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
@@ -86,12 +86,12 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: kCoralPink),
+            icon: Icon(Icons.logout, color: kCoralPink),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
+                MaterialPageRoute(builder: (context) => LoginPage()),
               );
             },
           ),
@@ -105,7 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(
+            return Center(
                 child: CircularProgressIndicator(color: kMountainBlue));
           }
 
@@ -120,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Container(
                 color: Colors.white,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -162,7 +162,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         : null),
                                     child: (_pickedProfileImage == null &&
                                         profilePicUrl.isEmpty)
-                                        ? const Icon(Icons.person,
+                                        ? Icon(Icons.person,
                                         size: 46, color: kForestShadow)
                                         : null,
                                   ),
@@ -170,7 +170,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     bottom: 2,
                                     right: 2,
                                     child: Container(
-                                      padding: const EdgeInsets.all(4),
+                                      padding: EdgeInsets.all(4),
                                       decoration: BoxDecoration(
                                         color: kSunsetOrange,
                                         shape: BoxShape.circle,
@@ -178,29 +178,28 @@ class _ProfilePageState extends State<ProfilePage> {
                                             color: Colors.white, width: 2),
                                       ),
                                       child: _isUploading
-                                          ? const SizedBox(
+                                          ? SizedBox(
                                         width: 14,
                                         height: 14,
                                         child: CircularProgressIndicator(
                                             color: Colors.white,
                                             strokeWidth: 2),
                                       )
-                                          : const Icon(Icons.edit,
+                                          : Icon(Icons.edit,
                                           color: Colors.white, size: 14),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-
-                            const SizedBox(width: 20),
+                            SizedBox(width: 20),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     userName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: kDeepNavy,
@@ -208,18 +207,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   Text(
                                     userEmail,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: Colors.grey, fontSize: 13),
                                   ),
-
-                                  const SizedBox(height: 12),
+                                  SizedBox(height: 12),
                                   Row(
                                     mainAxisAlignment:
                                     MainAxisAlignment.start,
                                     children: [
                                       _statColumn(
                                           postCount.toString(), "Posts"),
-                                      const SizedBox(width: 30),
+                                      SizedBox(width: 30),
                                       _statColumn(
                                           totalLikes.toString(), "Likes"),
                                     ],
@@ -241,28 +239,28 @@ class _ProfilePageState extends State<ProfilePage> {
                   height: 90,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                         horizontal: 10, vertical: 8),
                     itemCount: travelHistory.length,
                     itemBuilder: (context, index) {
                       final String trip =
                       travelHistory[index].toString();
                       return Padding(
-                        padding: const EdgeInsets.only(right: 12),
+                        padding: EdgeInsets.only(right: 12),
                         child: Column(
                           children: [
                             CircleAvatar(
                               radius: 26,
                               backgroundColor: kAdventurePurple,
-                              child: const Icon(Icons.flag,
+                              child: Icon(Icons.flag,
                                   color: Colors.white, size: 22),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               trip.length > 8
                                   ? '${trip.substring(0, 8)}..'
                                   : trip,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 11, color: kDeepNavy),
                             ),
                           ],
@@ -271,9 +269,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                 ),
-
-              const Divider(height: 1, color: Colors.grey),
-
+              Divider(height: 1, color: Colors.grey),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -282,7 +278,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return const SizedBox();
+                      return SizedBox();
                     }
 
                     var posts = snapshot.data!.docs;
@@ -294,16 +290,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           children: [
                             Icon(Icons.photo_camera_outlined,
                                 size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 12),
-                            const Text(
+                            SizedBox(height: 12),
+                            Text(
                               "No Posts",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 22,
                                   color: kDeepNavy),
                             ),
-                            const SizedBox(height: 6),
-                            const Text(
+                            SizedBox(height: 6),
+                            Text(
                               "Share your first travel photo!",
                               style: TextStyle(
                                   color: Colors.grey, fontSize: 14),
@@ -314,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12),
                       itemCount: posts.length,
                       itemBuilder: (context, index) {
                         var perpost = posts[index];
@@ -326,12 +322,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         final int commentsCount = perpost['comments_count'] ?? 0;
 
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(14),
+                          margin: EdgeInsets.only(bottom: 12),
+                          padding: EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(15),
-                            boxShadow: const [
+                            boxShadow: [
                               BoxShadow(
                                 color: Colors.black12,
                                 blurRadius: 5,
@@ -347,22 +343,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                 timestamp != null
                                     ? timestamp.toDate().toString().substring(0, 16)
                                     : "Posting...",
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 12, color: Colors.grey),
                               ),
-
-                              const SizedBox(height: 8),
-
+                              SizedBox(height: 8),
                               if (content.isNotEmpty)
                                 Text(
                                   content,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 15, color: kDeepNavy),
                                 ),
-
                               if (imageUrl.isNotEmpty)
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 10),
+                                  padding: EdgeInsets.only(top: 10),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image.network(
@@ -376,7 +369,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         return Container(
                                           height: 180,
                                           color: Colors.grey[100],
-                                          child: const Center(
+                                          child: Center(
                                             child: CircularProgressIndicator(
                                                 color: kMountainBlue),
                                           ),
@@ -386,7 +379,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           Container(
                                             height: 80,
                                             color: kSkyCream,
-                                            child: const Center(
+                                            child: Center(
                                               child: Icon(
                                                   Icons.broken_image_outlined,
                                                   color: Colors.grey),
@@ -399,28 +392,27 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Container(
                                   height: 80,
                                   color: kSkyCream,
-                                  child: const Center(
+                                  child: Center(
                                     child: Text("No content",
                                         style:
                                         TextStyle(color: Colors.grey)),
                                   ),
                                 ),
-
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10),
                               Row(
                                 children: [
-                                  const Icon(Icons.thumb_up_alt_outlined,
+                                  Icon(Icons.thumb_up_alt_outlined,
                                       color: kSunsetOrange, size: 18),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4),
                                   Text('$likesCount',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Colors.grey)),
-                                  const SizedBox(width: 16),
-                                  const Icon(Icons.comment_outlined,
+                                  SizedBox(width: 16),
+                                  Icon(Icons.comment_outlined,
                                       color: kCoralPink, size: 18),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4),
                                   Text('$commentsCount',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Colors.grey)),
                                 ],
                               ),
@@ -448,16 +440,16 @@ class _ProfilePageState extends State<ProfilePage> {
           if (index == 0) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const NewsfeedPage()),
+              MaterialPageRoute(builder: (context) => NewsfeedPage()),
             );
           } else if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const PostPage()),
+              MaterialPageRoute(builder: (context) => PostPage()),
             );
           }
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded), label: "Newsfeed"),
           BottomNavigationBarItem(
