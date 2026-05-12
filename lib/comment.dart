@@ -143,7 +143,7 @@ class _CommentPageState extends State<CommentPage> {
                         var c = comments[index];
                         return ListTile(
                           leading: CircleAvatar(backgroundColor: kAdventurePurple, child: Icon(Icons.person, color: Colors.white, size: 18)),
-                          title: Text(c['user_id'] ?? "User", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          title: Text(c['user_name'] ?? "User", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           subtitle: Text(c['content'] ?? ""),
                         );
                       },
