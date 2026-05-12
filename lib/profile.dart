@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
             .update({'profile_picture': downloadUrl});
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile picture updated!")),
+          SnackBar(content: Text("Profile picture updated!")),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,19 +51,6 @@ class _ProfilePageState extends State<ProfilePage> {
         if (mounted) setState(() => _isUploading = false);
       }
     }
-  }
-  Widget _statColumn(String count, String label) {
-    return Column(
-      children: [
-        Text(
-          count,
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, fontSize: 20, color: kDeepNavy),
-        ),
-        Text(label,
-            style: const TextStyle(color: Colors.grey, fontSize: 13)),
-      ],
-    );
   }
 
   @override
@@ -122,114 +109,78 @@ class _ProfilePageState extends State<ProfilePage> {
                 padding:
                 EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection("tbl_posts")
-                      .where('user_id', isEqualTo: postUserId)
-                      .snapshots(),
-                  builder: (context, postSnap) {
-
-                    final int postCount =
-                        postSnap.data?.docs.length ?? 0;
-                    int totalLikes = 0;
-                    if (postSnap.hasData) {
-                      for (var doc in postSnap.data!.docs) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        totalLikes += (data['likes_count'] as int? ?? 0);
-                      }
-                    }
-
-                    return Column(
-                      children: [
-
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: () =>
-                                  _pickAndUploadProfilePicture(uid),
-                              child: Stack(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 46,
-                                    backgroundColor: kRiverCyan,
-                                    backgroundImage:
-                                    _pickedProfileImage != null
-                                        ? FileImage(_pickedProfileImage!)
-                                    as ImageProvider
-                                        : (profilePicUrl.isNotEmpty
-                                        ? NetworkImage(profilePicUrl)
-                                        : null),
-                                    child: (_pickedProfileImage == null &&
-                                        profilePicUrl.isEmpty)
-                                        ? Icon(Icons.person,
-                                        size: 46, color: kForestShadow)
-                                        : null,
-                                  ),
-                                  Positioned(
-                                    bottom: 2,
-                                    right: 2,
-                                    child: Container(
-                                      padding: EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                        color: kSunsetOrange,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: Colors.white, width: 2),
-                                      ),
-                                      child: _isUploading
-                                          ? SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 2),
-                                      )
-                                          : Icon(Icons.edit,
-                                          color: Colors.white, size: 14),
-                                    ),
-                                  ),
-                                ],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () =>
+                          _pickAndUploadProfilePicture(uid),
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 46,
+                            backgroundColor: kRiverCyan,
+                            backgroundImage:
+                            _pickedProfileImage != null
+                                ? FileImage(_pickedProfileImage!)
+                            as ImageProvider
+                                : (profilePicUrl.isNotEmpty
+                                ? NetworkImage(profilePicUrl)
+                                : null),
+                            child: (_pickedProfileImage == null &&
+                                profilePicUrl.isEmpty)
+                                ? Icon(Icons.person,
+                                size: 46, color: kForestShadow)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 2,
+                            right: 2,
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: kSunsetOrange,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.white, width: 2),
                               ),
+                              child: _isUploading
+                                  ? SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2),
+                              )
+                                  : Icon(Icons.edit,
+                                  color: Colors.white, size: 14),
                             ),
-                            SizedBox(width: 20),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    userName,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: kDeepNavy,
-                                    ),
-                                  ),
-                                  Text(
-                                    userEmail,
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 13),
-                                  ),
-                                  SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                    children: [
-                                      _statColumn(
-                                          postCount.toString(), "Posts"),
-                                      SizedBox(width: 30),
-                                      _statColumn(
-                                          totalLikes.toString(), "Likes"),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userName,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: kDeepNavy,
                             ),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
+                          ),
+                          Text(
+                            userEmail,
+                            style: TextStyle(
+                                color: Colors.grey, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -255,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: Icon(Icons.flag,
                                   color: Colors.white, size: 22),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               trip.length > 8
                                   ? '${trip.substring(0, 8)}..'

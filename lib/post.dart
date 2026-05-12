@@ -229,6 +229,7 @@ class _PostPageState extends State<PostPage> {
                                 'timestamp': FieldValue.serverTimestamp(),
                                 'likes_count': 0,
                                 'comments_count': 0,
+                                'liked_by': [],
                               });
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text("Post submitted!")),

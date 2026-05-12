@@ -9,9 +9,10 @@ import 'comment.dart';
 
 class NewsfeedPage extends StatelessWidget {
   const NewsfeedPage({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final String currentUid =
+        FirebaseAuth.instance.currentUser?.uid ?? "";
     return Scaffold(
       backgroundColor: kSkyCream,
       appBar: AppBar(
@@ -123,15 +124,18 @@ class NewsfeedPage extends StatelessWidget {
                   itemCount: posts.length,
                   itemBuilder: (context, index) {
                     var perpost = posts[index];
+                    final data = perpost.data();
 
                     final String postDocId = perpost.id;
-                    final String userId = perpost['user_id'] ?? "";
-                    final String userName = perpost['user_name'] ?? "";
-                    final String content = perpost['content'] ?? "";
-                    final String imageUrl = perpost['image_url'] ?? "";
-                    final timestamp = perpost['timestamp'];
-                    final int likesCount = perpost['likes_count'] ?? 0;
-                    final int commentsCount = perpost['comments_count'] ?? 0;
+                    final String userId = data['user_id'] ?? "";
+                    final String userName = data['user_name'] ?? userId;
+                    final String content = data['content'] ?? "";
+                    final String imageUrl = data['image_url'] ?? "";
+                    final timestamp = data['timestamp'];
+                    final int likesCount = data['likes_count'] ?? 0;
+                    final int commentsCount = data['comments_count'] ?? 0;
+                    final List likedBy = List.from(data['liked_by'] ?? []);
+                    final bool alreadyLiked = likedBy.contains(currentUid);
 
                     final String timestampStr = timestamp != null
                         ? timestamp.toDate().toString().substring(0, 16)
@@ -154,13 +158,14 @@ class NewsfeedPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
+                            padding:
+                            EdgeInsets.fromLTRB(14, 14, 14, 0),
                             child: Row(
                               children: [
                                 CircleAvatar(
                                   backgroundColor: kRiverCyan,
-                                  child:
-                                  Icon(Icons.person, color: kForestShadow),
+                                  child: Icon(Icons.person,
+                                      color: kForestShadow),
                                 ),
                                 SizedBox(width: 10),
                                 Expanded(
@@ -179,7 +184,8 @@ class NewsfeedPage extends StatelessWidget {
                                       Text(
                                         timestampStr,
                                         style: TextStyle(
-                                            fontSize: 11, color: Colors.grey),
+                                            fontSize: 11,
+                                            color: Colors.grey),
                                       ),
                                     ],
                                   ),
@@ -189,7 +195,8 @@ class NewsfeedPage extends StatelessWidget {
                           ),
                           if (content.isNotEmpty)
                             Padding(
-                              padding: EdgeInsets.fromLTRB(14, 10, 14, 0),
+                              padding: EdgeInsets.fromLTRB(
+                                  14, 10, 14, 0),
                               child: Text(
                                 content,
                                 style: TextStyle(
@@ -198,7 +205,8 @@ class NewsfeedPage extends StatelessWidget {
                             ),
                           if (imageUrl.isNotEmpty)
                             Padding(
-                              padding: EdgeInsets.only(top: 10),
+                              padding:
+                              EdgeInsets.only(top: 10),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(15),
@@ -221,15 +229,16 @@ class NewsfeedPage extends StatelessWidget {
                                       ),
                                     );
                                   },
-                                  errorBuilder: (_, __, ___) =>
-                                      SizedBox(),
+                                  errorBuilder: (_, __, ___) => SizedBox(),
                                 ),
                               ),
                             ),
                           Padding(
-                            padding:
-                            EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                            child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            child: Divider(
+                                height: 1,
+                                color: Color(0xFFEEEEEE)),
                           ),
                           Padding(
                             padding: EdgeInsets.fromLTRB(8, 0, 8, 10),
@@ -237,16 +246,45 @@ class NewsfeedPage extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: TextButton.icon(
-                                    onPressed: () {
+                                    onPressed: () async {
+                                      if (alreadyLiked) {
+                                        await FirebaseFirestore.instance
+                                            .collection("tbl_posts")
+                                            .doc(postDocId)
+                                            .update({
+                                          'liked_by'   : FieldValue.arrayRemove([currentUid]),
+                                          'likes_count': FieldValue.increment(-1),
+                                        });
+                                      } else {
+                                        await FirebaseFirestore.instance
+                                            .collection("tbl_posts")
+                                            .doc(postDocId)
+                                            .update({
+                                          'liked_by'   : FieldValue.arrayUnion([currentUid]),
+                                          'likes_count': FieldValue.increment(1),
+                                        });
+                                      }
                                     },
                                     icon: Icon(
-                                        Icons.thumb_up_alt_outlined,
-                                        color: kSunsetOrange,
-                                        size: 18),
+                                      alreadyLiked
+                                          ? Icons.thumb_up_alt
+                                          : Icons.thumb_up_alt_outlined,
+                                      color: alreadyLiked
+                                          ? kSunsetOrange
+                                          : Colors.grey,
+                                      size: 18,
+                                    ),
                                     label: Text(
                                       '$likesCount Likes',
                                       style: TextStyle(
-                                          color: kDeepNavy, fontSize: 13),
+                                        color: alreadyLiked
+                                            ? kSunsetOrange
+                                            : kDeepNavy,
+                                        fontSize: 13,
+                                        fontWeight: alreadyLiked
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
                                     ),
                                     style: TextButton.styleFrom(
                                       foregroundColor: kSunsetOrange,
@@ -268,13 +306,13 @@ class NewsfeedPage extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => CommentPage(
-                                            postId : postDocId,
-                                            postUserId: userId,
-                                            postUserName: userName,
-                                            postContent: content,
-                                            postImageUrl: imageUrl,
-                                            postTimestamp: timestampStr,
-                                            postLikesCount: likesCount,
+                                            postId          : postDocId,
+                                            postUserId      : userId,
+                                            postUserName    : userName,
+                                            postContent     : content,
+                                            postImageUrl    : imageUrl,
+                                            postTimestamp   : timestampStr,
+                                            postLikesCount  : likesCount,
                                             postCommentsCount: commentsCount,
                                           ),
                                         ),
