@@ -44,12 +44,10 @@ class _RegisterPageState extends State<RegisterPage> {
             child: ListView(
               shrinkWrap: true,
               children: [
-                CircleAvatar(
-                  radius: 45,
-                  backgroundColor: kMountainBlue,
-                  child: Icon(Icons.travel_explore, size: 50, color: Colors.white),
+                Image.asset(
+                  'assets/wandergram_logo.png',
+                  height: 300,
                 ),
-                SizedBox(height: 20),
                 Text(
                   "Create Account",
                   textAlign: TextAlign.center,
@@ -146,16 +144,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         var nsfullname = fullnameController.text;
-                        var nsemail    = emailController.text;
-                        var nspass     = passwordController.text;
-
+                        var nsemail = emailController.text;
+                        var nspass = passwordController.text;
                         try {
                           var usercredential = await FirebaseAuth.instance
                               .createUserWithEmailAndPassword(
                               email: nsemail, password: nspass);
-
                           await usercredential.user!.updateDisplayName(nsfullname);
-
                           await FirebaseFirestore.instance
                               .collection("tbl_users")
                               .doc(usercredential.user!.uid)

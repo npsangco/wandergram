@@ -43,20 +43,9 @@ class _LoginPageState extends State<LoginPage> {
             child: ListView(
               shrinkWrap: true,
               children: [
-                CircleAvatar(
-                  radius: 45,
-                  backgroundColor: kMountainBlue,
-                  child: Icon(Icons.travel_explore, size: 50, color: Colors.white),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "Wandergram",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: kDeepNavy,
-                  ),
+                Image.asset(
+                  'assets/wandergram_logo.png',
+                  height: 300,
                 ),
                 SizedBox(height: 5),
                 Text(
