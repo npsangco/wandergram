@@ -7,8 +7,32 @@ import 'profile.dart';
 import 'login.dart';
 import 'comment.dart';
 
-class NewsfeedPage extends StatelessWidget {
+class NewsfeedPage extends StatefulWidget {
   const NewsfeedPage({super.key});
+  @override
+  State<NewsfeedPage> createState() => _NewsfeedPageState();
+}
+
+class _NewsfeedPageState extends State<NewsfeedPage> {
+  String _currentUserProfilePic = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUserProfilePic();
+  }
+
+  Future<void> _loadCurrentUserProfilePic() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final doc = await FirebaseFirestore.instance.collection("tbl_users").doc(uid).get();
+    if (doc.exists && mounted) {
+      setState(() {
+        _currentUserProfilePic = (doc.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final String currentUid =
@@ -50,7 +74,12 @@ class NewsfeedPage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundColor: kRiverCyan,
-                  child: Icon(Icons.person, color: kForestShadow),
+                  backgroundImage: _currentUserProfilePic.isNotEmpty
+                      ? NetworkImage(_currentUserProfilePic)
+                      : null,
+                  child: _currentUserProfilePic.isEmpty
+                      ? Icon(Icons.person, color: kForestShadow)
+                      : null,
                 ),
                 SizedBox(width: 10),
                 Expanded(
@@ -162,10 +191,19 @@ class NewsfeedPage extends StatelessWidget {
                             EdgeInsets.fromLTRB(14, 14, 14, 0),
                             child: Row(
                               children: [
-                                CircleAvatar(
-                                  backgroundColor: kRiverCyan,
-                                  child: Icon(Icons.person,
-                                      color: kForestShadow),
+                                FutureBuilder<DocumentSnapshot>(
+                                  future: FirebaseFirestore.instance.collection("tbl_users").doc(userId).get(),
+                                  builder: (context, userSnap) {
+                                    String picUrl = "";
+                                    if (userSnap.hasData && userSnap.data!.exists) {
+                                      picUrl = (userSnap.data!.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+                                    }
+                                    return CircleAvatar(
+                                      backgroundColor: kRiverCyan,
+                                      backgroundImage: picUrl.isNotEmpty ? NetworkImage(picUrl) : null,
+                                      child: picUrl.isEmpty ? Icon(Icons.person, color: kForestShadow) : null,
+                                    );
+                                  },
                                 ),
                                 SizedBox(width: 10),
                                 Expanded(
@@ -205,32 +243,24 @@ class NewsfeedPage extends StatelessWidget {
                             ),
                           if (imageUrl.isNotEmpty)
                             Padding(
-                              padding:
-                              EdgeInsets.only(top: 10),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(15),
-                                  bottomRight: Radius.circular(15),
-                                ),
-                                child: Image.network(
-                                  imageUrl,
-                                  height: 220,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, progress) {
-                                    if (progress == null) return child;
-                                    return Container(
-                                      height: 220,
-                                      color: Colors.grey[100],
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                            color: kMountainBlue),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (_, __, ___) => SizedBox(),
-                                ),
+                              padding: EdgeInsets.fromLTRB(14, 10, 14, 0),
+                              child: Image.network(
+                                imageUrl,
+                                height: 220,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return Container(
+                                    height: 220,
+                                    color: Colors.grey[100],
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                          color: kMountainBlue),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (_, __, ___) => SizedBox(),
                               ),
                             ),
                           Padding(

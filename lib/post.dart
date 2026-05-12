@@ -21,6 +21,24 @@ class _PostPageState extends State<PostPage> {
 
   File? selectedImage;
   bool _isUploading = false;
+  String _profilePicUrl = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfilePic();
+  }
+
+  Future<void> _loadProfilePic() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final doc = await FirebaseFirestore.instance.collection("tbl_users").doc(uid).get();
+    if (doc.exists && mounted) {
+      setState(() {
+        _profilePicUrl = (doc.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,14 +85,19 @@ class _PostPageState extends State<PostPage> {
                               CircleAvatar(
                                 radius: 22,
                                 backgroundColor: kRiverCyan,
-                                child: Icon(Icons.person, color: kForestShadow),
+                                backgroundImage: _profilePicUrl.isNotEmpty
+                                    ? NetworkImage(_profilePicUrl)
+                                    : null,
+                                child: _profilePicUrl.isEmpty
+                                    ? Icon(Icons.person, color: kForestShadow)
+                                    : null,
                               ),
                               SizedBox(width: 10),
                               Text(
                                 FirebaseAuth
-                                        .instance
-                                        .currentUser
-                                        ?.displayName ??
+                                    .instance
+                                    .currentUser
+                                    ?.displayName ??
                                     "User",
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -90,7 +113,7 @@ class _PostPageState extends State<PostPage> {
                             maxLines: null,
                             style: TextStyle(fontSize: 16, color: kDeepNavy),
                             validator: (value) =>
-                                (value == null || value.isEmpty)
+                            (value == null || value.isEmpty)
                                 ? "Required"
                                 : null,
                             decoration: InputDecoration(
@@ -139,39 +162,39 @@ class _PostPageState extends State<PostPage> {
                           selectedImage == null
                               ? SizedBox()
                               : Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: Image.file(
-                                        selectedImage!,
-                                        height: 200,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 6,
-                                      right: 6,
-                                      child: GestureDetector(
-                                        onTap: () => setState(
-                                          () => selectedImage = null,
-                                        ),
-                                        child: Container(
-                                          padding: EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black54,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 18,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.file(
+                                  selectedImage!,
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
                                 ),
+                              ),
+                              Positioned(
+                                top: 6,
+                                right: 6,
+                                child: GestureDetector(
+                                  onTap: () => setState(
+                                        () => selectedImage = null,
+                                  ),
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -197,73 +220,73 @@ class _PostPageState extends State<PostPage> {
                 onPressed: _isUploading
                     ? null
                     : () async {
-                        if (!formKey.currentState!.validate()) return;
+                  if (!formKey.currentState!.validate()) return;
 
-                        setState(() => _isUploading = true);
+                  setState(() => _isUploading = true);
 
-                        try {
-                          var content = contentController.text;
-                          String? uploadedImageUrl;
+                  try {
+                    var content = contentController.text;
+                    String? uploadedImageUrl;
 
-                          if (selectedImage != null) {
-                            String fileName = DateTime.now()
-                                .millisecondsSinceEpoch
-                                .toString();
-                            Reference storageRef = FirebaseStorage.instance
-                                .ref()
-                                .child("post_images")
-                                .child("$fileName.jpg");
-                            await storageRef.putFile(selectedImage!);
-                            uploadedImageUrl = await storageRef
-                                .getDownloadURL();
-                          }
-                          final user = FirebaseAuth.instance.currentUser;
-                          await FirebaseFirestore.instance
-                              .collection("tbl_posts")
-                              .add({
-                                'post_id': '',
-                                'user_id': user?.uid ?? "",
-                                'user_name': user?.displayName ?? "User",
-                                'content': content,
-                                'image_url': uploadedImageUrl ?? '',
-                                'timestamp': FieldValue.serverTimestamp(),
-                                'likes_count': 0,
-                                'comments_count': 0,
-                                'liked_by': [],
-                              });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Post submitted!")),
-                          );
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NewsfeedPage(),
-                            ),
-                          );
-                        } catch (e) {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text("$e")));
-                        } finally {
-                          if (mounted) setState(() => _isUploading = false);
-                        }
-                      },
+                    if (selectedImage != null) {
+                      String fileName = DateTime.now()
+                          .millisecondsSinceEpoch
+                          .toString();
+                      Reference storageRef = FirebaseStorage.instance
+                          .ref()
+                          .child("post_images")
+                          .child("$fileName.jpg");
+                      await storageRef.putFile(selectedImage!);
+                      uploadedImageUrl = await storageRef
+                          .getDownloadURL();
+                    }
+                    final user = FirebaseAuth.instance.currentUser;
+                    await FirebaseFirestore.instance
+                        .collection("tbl_posts")
+                        .add({
+                      'post_id': '',
+                      'user_id': user?.uid ?? "",
+                      'user_name': user?.displayName ?? "User",
+                      'content': content,
+                      'image_url': uploadedImageUrl ?? '',
+                      'timestamp': FieldValue.serverTimestamp(),
+                      'likes_count': 0,
+                      'comments_count': 0,
+                      'liked_by': [],
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Post submitted!")),
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NewsfeedPage(),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text("$e")));
+                  } finally {
+                    if (mounted) setState(() => _isUploading = false);
+                  }
+                },
                 child: _isUploading
                     ? SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
                     : Text(
-                        "Post",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  "Post",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),

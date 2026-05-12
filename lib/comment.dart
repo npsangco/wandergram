@@ -32,6 +32,34 @@ class CommentPage extends StatefulWidget {
 class _CommentPageState extends State<CommentPage> {
   final commentController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  String _postAuthorPicUrl = "";
+  String _currentUserPicUrl = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfilePics();
+  }
+
+  Future<void> _loadProfilePics() async {
+    if (widget.postUserId.isNotEmpty) {
+      final doc = await FirebaseFirestore.instance.collection("tbl_users").doc(widget.postUserId).get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _postAuthorPicUrl = (doc.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+        });
+      }
+    }
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      final doc = await FirebaseFirestore.instance.collection("tbl_users").doc(uid).get();
+      if (doc.exists && mounted) {
+        setState(() {
+          _currentUserPicUrl = (doc.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +94,15 @@ class _CommentPageState extends State<CommentPage> {
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(backgroundColor: kRiverCyan, child: Icon(Icons.person, color: kForestShadow)),
+                          CircleAvatar(
+                            backgroundColor: kRiverCyan,
+                            backgroundImage: _postAuthorPicUrl.isNotEmpty
+                                ? NetworkImage(_postAuthorPicUrl)
+                                : null,
+                            child: _postAuthorPicUrl.isEmpty
+                                ? Icon(Icons.person, color: kForestShadow)
+                                : null,
+                          ),
                           SizedBox(width: 10),
                           Expanded(
                             child: Column(
@@ -141,10 +177,26 @@ class _CommentPageState extends State<CommentPage> {
                       itemCount: comments.length,
                       itemBuilder: (context, index) {
                         var c = comments[index];
-                        return ListTile(
-                          leading: CircleAvatar(backgroundColor: kAdventurePurple, child: Icon(Icons.person, color: Colors.white, size: 18)),
-                          title: Text(c['user_name'] ?? "User", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          subtitle: Text(c['content'] ?? ""),
+                        final String commentUserId = c['user_id'] ?? "";
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: commentUserId.isNotEmpty
+                              ? FirebaseFirestore.instance.collection("tbl_users").doc(commentUserId).get()
+                              : Future.value(null),
+                          builder: (context, userSnap) {
+                            String commentorPic = "";
+                            if (userSnap.hasData && userSnap.data != null && userSnap.data!.exists) {
+                              commentorPic = (userSnap.data!.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+                            }
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: kAdventurePurple,
+                                backgroundImage: commentorPic.isNotEmpty ? NetworkImage(commentorPic) : null,
+                                child: commentorPic.isEmpty ? Icon(Icons.person, color: Colors.white, size: 18) : null,
+                              ),
+                              title: Text(c['user_name'] ?? "User", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                              subtitle: Text(c['content'] ?? ""),
+                            );
+                          },
                         );
                       },
                     );
@@ -160,6 +212,17 @@ class _CommentPageState extends State<CommentPage> {
               key: formKey,
               child: Row(
                 children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: kRiverCyan,
+                    backgroundImage: _currentUserPicUrl.isNotEmpty
+                        ? NetworkImage(_currentUserPicUrl)
+                        : null,
+                    child: _currentUserPicUrl.isEmpty
+                        ? Icon(Icons.person, color: kForestShadow, size: 18)
+                        : null,
+                  ),
+                  SizedBox(width: 8),
                   Expanded(
                     child: TextFormField(
                       controller: commentController,
