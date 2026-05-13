@@ -59,16 +59,14 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showPostDetail(BuildContext context, QueryDocumentSnapshot perpost) {
     final data = perpost.data() as Map<String, dynamic>;
     final String postDocId = perpost.id;
+    final String userId = data['user_id'] ?? ""; // This MUST be the UID
     final String userName = data['user_name'] ?? "User";
     final String content = data['content'] ?? "";
     final String imageUrl = data['image_url'] ?? "";
     final timestamp = data['timestamp'];
-    final int likesCount = data['likes_count'] ?? 0;
-    final int commentsCount = data['comments_count'] ?? 0;
     final String timestampStr = timestamp != null
         ? timestamp.toDate().toString().substring(0, 16)
         : "";
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -76,44 +74,44 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.85,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
               Container(
-                margin: EdgeInsets.only(top: 10, bottom: 8),
+                margin: const EdgeInsets.only(top: 10, bottom: 8),
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
               ),
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: kRiverCyan,
-                          child:
-                          Icon(Icons.person, color: kForestShadow),
+                        FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance.collection("tbl_users").doc(userId).get(),
+                          builder: (context, userSnap) {
+                            String pic = "";
+                            if (userSnap.hasData && userSnap.data!.exists) {
+                              pic = (userSnap.data!.data() as Map<String, dynamic>)['profile_picture'] ?? "";
+                            }
+                            return CircleAvatar(
+                              backgroundColor: kRiverCyan,
+                              backgroundImage: pic.isNotEmpty ? NetworkImage(pic) : null,
+                              child: pic.isEmpty ? const Icon(Icons.person, color: kForestShadow) : null,
+                            );
+                          },
                         ),
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              userName,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kDeepNavy),
-                            ),
-                            Text(
-                              timestampStr,
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
-                            ),
+                            Text(userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kDeepNavy)),
+                            Text(timestampStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                           ],
                         ),
                       ],
@@ -122,47 +120,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     if (imageUrl.isNotEmpty)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 80,
-                            color: kSkyCream,
-                            child: Center(child: Icon(Icons.broken_image_outlined, color: Colors.grey),
-                            ),
-                          ),
-                        ),
+                        child: Image.network(imageUrl, width: double.infinity, fit: BoxFit.cover),
                       ),
-                    const SizedBox(height: 12),
                     if (content.isNotEmpty)
-                      Text(content, style: const TextStyle(fontSize: 15, color: kDeepNavy)),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(content, style: const TextStyle(fontSize: 15, color: kDeepNavy)),
+                      ),
+
                     const SizedBox(height: 16),
                     const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(Icons.thumb_up_alt_outlined, color: kSunsetOrange, size: 18),
-                            label: Text('$likesCount Likes', style: const TextStyle(color: kDeepNavy, fontSize: 13)),
-                          ),
-                        ),
-                        Container(height: 22, width: 1, color: Colors.grey[300]),
-                        Expanded(
-                          child: TextButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(Icons.comment_outlined, color: kCoralPink, size: 18),
-                            label: Text('$commentsCount Comments', style: const TextStyle(color: kDeepNavy, fontSize: 13)),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                    const SizedBox(height: 8),
                     const Padding(
-                      padding: EdgeInsets.only(left: 4, bottom: 8),
-                      child: Text("Comments", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: kDeepNavy)),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text("Comments", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kDeepNavy)),
                     ),
                     StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
@@ -171,30 +141,27 @@ class _ProfilePageState extends State<ProfilePage> {
                           .snapshots(),
                       builder: (context, commentSnap) {
                         if (!commentSnap.hasData || commentSnap.data!.docs.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Center(child: Text("No comments yet.", style: TextStyle(color: Colors.grey))),
-                          );
+                          return const Center(child: Text("No comments yet.", style: TextStyle(color: Colors.grey)));
                         }
-                        final comments = commentSnap.data!.docs;
                         return ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: comments.length,
+                          itemCount: commentSnap.data!.docs.length,
                           itemBuilder: (context, i) {
-                            final c = comments[i];
-                            final String commentUserId = c['user_id'] ?? "";
+                            final c = commentSnap.data!.docs[i];
+                            final String commentorUid = c['user_id'] ?? "";
+
                             return FutureBuilder<DocumentSnapshot>(
-                              future: commentUserId.isNotEmpty
-                                  ? FirebaseFirestore.instance.collection("tbl_users").doc(commentUserId).get()
-                                  : Future.value(null),
+                              future: FirebaseFirestore.instance.collection("tbl_users").doc(commentorUid).get(),
                               builder: (context, userSnap) {
                                 String commentorPic = "";
-                                if (userSnap.hasData && userSnap.data != null && userSnap.data!.exists) {
+                                if (userSnap.hasData && userSnap.data!.exists) {
                                   commentorPic = (userSnap.data!.data() as Map<String, dynamic>)['profile_picture'] ?? "";
                                 }
                                 return ListTile(
+                                  contentPadding: EdgeInsets.zero,
                                   leading: CircleAvatar(
+                                    radius: 18,
                                     backgroundColor: kAdventurePurple,
                                     backgroundImage: commentorPic.isNotEmpty ? NetworkImage(commentorPic) : null,
                                     child: commentorPic.isEmpty ? const Icon(Icons.person, color: Colors.white, size: 18) : null,
