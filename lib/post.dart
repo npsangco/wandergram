@@ -146,16 +146,6 @@ class _PostPageState extends State<PostPage> {
                                   ],
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  Icon(Icons.videocam, color: kCoralPink),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    "Video",
-                                    style: TextStyle(color: kDeepNavy),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
                           SizedBox(height: 20),
