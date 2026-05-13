@@ -59,7 +59,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showPostDetail(BuildContext context, QueryDocumentSnapshot perpost) {
     final data = perpost.data() as Map<String, dynamic>;
     final String postDocId = perpost.id;
-    final String userId = data['user_id'] ?? ""; // This MUST be the UID
+    final String userId = data['user_id'] ?? "";
     final String userName = data['user_name'] ?? "User";
     final String content = data['content'] ?? "";
     final String imageUrl = data['image_url'] ?? "";
